@@ -1,0 +1,19 @@
+# .NET
+/.vs
+**/bin/
+**/obj/
+*.user
+*.suo
+*.cache
+/.DS_Store
+.DS_Store
+
+# Node / React
+/client/node_modules/
+/client/dist/
+/client/.vite/
+
+# Local environment files
+/.env
+/client/.env
+
