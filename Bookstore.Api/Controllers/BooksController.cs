@@ -20,18 +20,13 @@ public class BooksController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 5,
         [FromQuery] string sortBy = "title",
-        [FromQuery] string sortOrder = "asc",
-        [FromQuery] string? category = null
+        [FromQuery] string sortOrder = "asc"
     )
     {
         pageNumber = pageNumber < 1 ? 1 : pageNumber;
         pageSize = pageSize < 1 ? 5 : pageSize;
 
         IQueryable<Bookstore.Api.Models.Book> query = _context.Books.AsNoTracking();
-        if (!string.IsNullOrWhiteSpace(category))
-        {
-            query = query.Where(b => b.Category == category);
-        }
 
         if (string.Equals(sortBy, "title", StringComparison.OrdinalIgnoreCase))
         {
@@ -58,21 +53,8 @@ public class BooksController : ControllerBase
             totalCount,
             pageNumber,
             pageSize,
-            totalPages,
-            category
+            totalPages
         });
-    }
-
-    [HttpGet("categories")]
-    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
-    {
-        var categories = await _context.Books.AsNoTracking()
-            .Select(b => b.Category)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
-
-        return Ok(categories);
     }
 }
 
