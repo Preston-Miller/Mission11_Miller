@@ -1,4 +1,5 @@
 using Bookstore.Api.Data;
+using Bookstore.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,7 +28,7 @@ public class BooksController : ControllerBase
         pageNumber = pageNumber < 1 ? 1 : pageNumber;
         pageSize = pageSize < 1 ? 5 : pageSize;
 
-        IQueryable<Bookstore.Api.Models.Book> query = _context.Books.AsNoTracking();
+        IQueryable<Book> query = _context.Books.AsNoTracking();
         if (!string.IsNullOrWhiteSpace(category))
         {
             query = query.Where(b => b.Category == category);
@@ -74,5 +75,97 @@ public class BooksController : ControllerBase
 
         return Ok(categories);
     }
-}
 
+    [HttpGet("admin")]
+    public async Task<ActionResult<IEnumerable<Book>>> GetAdminBooks()
+    {
+        var books = await _context.Books.AsNoTracking()
+            .OrderBy(b => b.Title)
+            .ToListAsync();
+
+        return Ok(books);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Book>> GetBook(int id)
+    {
+        var book = await _context.Books.AsNoTracking()
+            .FirstOrDefaultAsync(b => b.BookID == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        return book;
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Book>> CreateBook([FromBody] BookInput input)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var book = new Book
+        {
+            Title = input.Title,
+            Author = input.Author,
+            Publisher = input.Publisher,
+            ISBN = input.ISBN,
+            Classification = input.Classification,
+            Category = input.Category,
+            PageCount = input.PageCount,
+            Price = input.Price
+        };
+
+        _context.Books.Add(book);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetBook), new { id = book.BookID }, book);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateBook(int id, [FromBody] BookInput input)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var book = await _context.Books.FindAsync(id);
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        book.Title = input.Title;
+        book.Author = input.Author;
+        book.Publisher = input.Publisher;
+        book.ISBN = input.ISBN;
+        book.Classification = input.Classification;
+        book.Category = input.Category;
+        book.PageCount = input.PageCount;
+        book.Price = input.Price;
+
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteBook(int id)
+    {
+        var book = await _context.Books.FindAsync(id);
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        _context.Books.Remove(book);
+        await _context.SaveChangesAsync();
+
+        return NoContent();
+    }
+}

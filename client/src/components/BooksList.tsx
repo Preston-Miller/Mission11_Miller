@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { API_BASE_URL } from '../apiBase'
 
 type Book = {
   bookId?: number
@@ -34,7 +36,6 @@ type ReturnContext = {
   scrollY: number
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5076'
 const CART_STORAGE_KEY = 'bookstore-cart'
 const RETURN_CONTEXT_KEY = 'bookstore-return-context'
 
@@ -214,9 +215,14 @@ export default function BooksList() {
             <h2 className="mb-1" style={blackStyle}>Miller Online Bookstore</h2>
             <div className="small" style={blackStyle}>{totalCount} books total</div>
           </div>
-          <button className="btn btn-outline-dark" onClick={() => setIsCartOpen(true)}>
-            Open Cart ({totalItems})
-          </button>
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <Link className="btn btn-outline-secondary" to="/adminbooks">
+              Admin books
+            </Link>
+            <button className="btn btn-outline-dark" onClick={() => setIsCartOpen(true)}>
+              Open Cart ({totalItems})
+            </button>
+          </div>
         </div>
 
         {/* Bootstrap features used for rubric comment:
