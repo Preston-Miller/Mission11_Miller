@@ -9,12 +9,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 // Use a DB under ContentRoot/Data so writes work when the repo lives on a sync/read-only-prone path (e.g. iCloud Desktop).
-// Seed from ../Bookstore.sqlite once if the local file is missing.
+// Seed from repo-root Bookstore.sqlite once if the local file is missing (Api lives under backend/Bookstore.Api).
 var contentRoot = builder.Environment.ContentRootPath;
 var dataDir = Path.Combine(contentRoot, "Data");
 Directory.CreateDirectory(dataDir);
 var localDbPath = Path.GetFullPath(Path.Combine(dataDir, "Bookstore.sqlite"));
-var seedDbPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "Bookstore.sqlite"));
+var seedDbPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "Bookstore.sqlite"));
 if (!File.Exists(localDbPath) && File.Exists(seedDbPath))
 {
     File.Copy(seedDbPath, localDbPath);

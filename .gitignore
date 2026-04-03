@@ -9,15 +9,15 @@
 .DS_Store
 
 # Node / React
-/client/node_modules/
-/client/dist/
-/client/.vite/
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
 
 # Local environment files
 /.env
-/client/.env
+/frontend/.env
 
 # Writable SQLite copy (seed copied from repo-root Bookstore.sqlite on first API run)
-Bookstore.Api/Data/*.sqlite
-Bookstore.Api/Data/*.sqlite-*
+backend/Bookstore.Api/Data/*.sqlite
+backend/Bookstore.Api/Data/*.sqlite-*
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookstore.Api", "Bookstore.Api\Bookstore.Api.csproj", "{306E2246-FB72-4389-8122-1EAA706B6902}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookstore.Api", "backend\Bookstore.Api\Bookstore.Api.csproj", "{306E2246-FB72-4389-8122-1EAA706B6902}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
