@@ -7,10 +7,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-var dbPath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "Bookstore.sqlite"));
+
+// Use a DB under ContentRoot/Data so writes work when the repo lives on a sync/read-only-prone path (e.g. iCloud Desktop).
+// Seed from ../Bookstore.sqlite once if the local file is missing.
+var contentRoot = builder.Environment.ContentRootPath;
+var dataDir = Path.Combine(contentRoot, "Data");
+Directory.CreateDirectory(dataDir);
+var localDbPath = Path.GetFullPath(Path.Combine(dataDir, "Bookstore.sqlite"));
+var seedDbPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "Bookstore.sqlite"));
+if (!File.Exists(localDbPath) && File.Exists(seedDbPath))
+{
+    File.Copy(seedDbPath, localDbPath);
+}
+
+var dbPath = File.Exists(localDbPath) ? localDbPath : seedDbPath;
 builder.Services.AddDbContext<BookstoreContext>(options =>
 {
-    // Use absolute path so the API always connects to the provided root DB file.
     options.UseSqlite($"Data Source={dbPath}");
 });
 builder.Services.AddCors(options =>

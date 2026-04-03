@@ -17,3 +17,7 @@
 /.env
 /client/.env
 
+# Writable SQLite copy (seed copied from repo-root Bookstore.sqlite on first API run)
+Bookstore.Api/Data/*.sqlite
+Bookstore.Api/Data/*.sqlite-*
+
