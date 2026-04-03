@@ -58,7 +58,8 @@ public class BooksController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 5,
         [FromQuery] string sortBy = "title",
-        [FromQuery] string sortOrder = "asc"
+        [FromQuery] string sortOrder = "asc",
+        [FromQuery] string? category = null
     )
     {
         pageNumber = pageNumber < 1 ? 1 : pageNumber;
