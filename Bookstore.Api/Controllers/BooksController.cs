@@ -16,6 +16,43 @@ public class BooksController : ControllerBase
         _context = context;
     }
 
+    // Literal path segments before [HttpGet] and [HttpGet("{id}")] so /admin and /categories always match here.
+    [HttpGet("categories")]
+    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
+    {
+        var categories = await _context.Books.AsNoTracking()
+            .Select(b => b.Category)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync();
+
+        return Ok(categories);
+    }
+
+    [HttpGet("admin")]
+    public async Task<ActionResult<IEnumerable<Book>>> GetAdminBooks()
+    {
+        var books = await _context.Books.AsNoTracking()
+            .OrderBy(b => b.Title)
+            .ToListAsync();
+
+        return Ok(books);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Book>> GetBook(int id)
+    {
+        var book = await _context.Books.AsNoTracking()
+            .FirstOrDefaultAsync(b => b.BookID == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        return book;
+    }
+
     [HttpGet]
     public async Task<ActionResult<object>> GetBooks(
         [FromQuery] int pageNumber = 1,
@@ -62,42 +99,6 @@ public class BooksController : ControllerBase
             totalPages,
             category
         });
-    }
-
-    [HttpGet("categories")]
-    public async Task<ActionResult<IEnumerable<string>>> GetCategories()
-    {
-        var categories = await _context.Books.AsNoTracking()
-            .Select(b => b.Category)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToListAsync();
-
-        return Ok(categories);
-    }
-
-    [HttpGet("admin")]
-    public async Task<ActionResult<IEnumerable<Book>>> GetAdminBooks()
-    {
-        var books = await _context.Books.AsNoTracking()
-            .OrderBy(b => b.Title)
-            .ToListAsync();
-
-        return Ok(books);
-    }
-
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Book>> GetBook(int id)
-    {
-        var book = await _context.Books.AsNoTracking()
-            .FirstOrDefaultAsync(b => b.BookID == id);
-
-        if (book == null)
-        {
-            return NotFound();
-        }
-
-        return book;
     }
 
     [HttpPost]

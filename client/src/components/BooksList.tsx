@@ -207,6 +207,16 @@ export default function BooksList() {
     )
   }
 
+  function handleRemoveLine(bookId: number) {
+    setCart((prev) => prev.filter((item) => resolveBookId(item.book) !== bookId))
+  }
+
+  function handleClearCart() {
+    if (cart.length === 0) return
+    if (!window.confirm('Remove all items from your cart?')) return
+    setCart([])
+  }
+
   return (
     <div className="container-fluid py-3" style={whitePageStyle}>
       <div className="container">
@@ -388,6 +398,7 @@ export default function BooksList() {
                         <th>Qty</th>
                         <th>Price</th>
                         <th>Subtotal</th>
+                        <th aria-label="Remove" />
                       </tr>
                     </thead>
                     <tbody>
@@ -408,13 +419,28 @@ export default function BooksList() {
                             </td>
                             <td>${item.book.price.toFixed(2)}</td>
                             <td>${subtotal.toFixed(2)}</td>
+                            <td>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => handleRemoveLine(id)}
+                                title="Remove from cart"
+                              >
+                                Remove
+                              </button>
+                            </td>
                           </tr>
                         )
                       })}
                     </tbody>
                   </table>
                 </div>
-                <div className="fw-semibold text-end mb-3">Total: ${cartTotal.toFixed(2)}</div>
+                <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <button type="button" className="btn btn-sm btn-link text-danger p-0" onClick={handleClearCart}>
+                    Clear cart
+                  </button>
+                  <div className="fw-semibold">Total: ${cartTotal.toFixed(2)}</div>
+                </div>
               </>
             )}
 

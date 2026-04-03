@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { API_BASE_URL } from '../apiBase'
 
@@ -42,12 +42,24 @@ const emptyForm: FormState = {
 }
 
 export default function AdminBooks() {
+  const formCardRef = useRef<HTMLDivElement>(null)
   const [books, setBooks] = useState<BookRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
+
+  function scrollFormIntoView() {
+    // Double rAF: run after React commits the DOM update (header text, field values).
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const first = formCardRef.current?.querySelector<HTMLInputElement>('input')
+        first?.focus({ preventScroll: true })
+      })
+    })
+  }
 
   const loadBooks = useCallback(async () => {
     setLoading(true)
@@ -85,11 +97,13 @@ export default function AdminBooks() {
   function startAdd() {
     setEditingId(null)
     setForm(emptyForm)
+    scrollFormIntoView()
   }
 
   function startEdit(book: BookRow) {
     setEditingId(resolveBookId(book))
     setForm(bookToForm(book))
+    scrollFormIntoView()
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -183,7 +197,7 @@ export default function AdminBooks() {
 
       {error ? <div className="alert alert-danger">{error}</div> : null}
 
-      <div className="card mb-4">
+      <div className="card mb-4" ref={formCardRef}>
         <div className="card-header">
           {editingId == null ? 'Add book' : `Edit book #${editingId}`}
         </div>
