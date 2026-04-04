@@ -8,33 +8,74 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-// Writable DB under ContentRoot/Data. Seed from (1) Bookstore.sqlite next to the app (Azure/publish output),
-// or (2) repo-root Bookstore.sqlite when running from backend/Bookstore.Api locally.
+// Writable DB file + seed copy. Azure App Service: use persistent dir under HOME (not always reliable under wwwroot).
 var contentRoot = builder.Environment.ContentRootPath;
-var dataDir = Path.Combine(contentRoot, "Data");
-Directory.CreateDirectory(dataDir);
-var localDbPath = Path.GetFullPath(Path.Combine(dataDir, "Bookstore.sqlite"));
-var publishedSeedPath = Path.GetFullPath(Path.Combine(contentRoot, "Bookstore.sqlite"));
-var devRepoRootSeedPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "Bookstore.sqlite"));
+var baseDir = AppContext.BaseDirectory;
 
-if (!File.Exists(localDbPath))
+static string ResolveWritableDataDir(string contentRoot)
 {
-    var seedSource = File.Exists(publishedSeedPath)
-        ? publishedSeedPath
-        : File.Exists(devRepoRootSeedPath)
-            ? devRepoRootSeedPath
-            : null;
-    if (seedSource != null)
+    var onAzure = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
+    if (onAzure)
     {
-        File.Copy(seedSource, localDbPath);
+        var home = Environment.GetEnvironmentVariable("HOME");
+        if (!string.IsNullOrEmpty(home))
+        {
+            return Path.Combine(home, "data", "bookstore");
+        }
+
+        // Windows App Service: persistent volume is often D:\home when HOME is unset.
+        if (OperatingSystem.IsWindows() && Directory.Exists(@"D:\home"))
+        {
+            return Path.Combine(@"D:\home", "data", "bookstore");
+        }
+    }
+
+    return Path.Combine(contentRoot, "Data");
+}
+
+string? FindSeedSqlite()
+{
+    foreach (var candidate in new[]
+             {
+                 Path.GetFullPath(Path.Combine(contentRoot, "Bookstore.sqlite")),
+                 Path.GetFullPath(Path.Combine(baseDir, "Bookstore.sqlite")),
+                 Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "Bookstore.sqlite")),
+             })
+    {
+        if (File.Exists(candidate) && new FileInfo(candidate).Length > 0)
+        {
+            return candidate;
+        }
+    }
+
+    return null;
+}
+
+var dataDir = Path.GetFullPath(ResolveWritableDataDir(contentRoot));
+Directory.CreateDirectory(dataDir);
+var localDbPath = Path.Combine(dataDir, "Bookstore.sqlite");
+var seedSource = FindSeedSqlite();
+
+Console.WriteLine($"[Bookstore] ContentRoot={contentRoot}");
+Console.WriteLine($"[Bookstore] BaseDirectory={baseDir}");
+Console.WriteLine($"[Bookstore] DataDir={dataDir}");
+Console.WriteLine($"[Bookstore] SeedSource={seedSource ?? "(none)"}");
+
+if (seedSource != null)
+{
+    var needsCopy = !File.Exists(localDbPath)
+                    || new FileInfo(localDbPath).Length < 1024; // empty/corrupt vs real ~24KB seed
+    if (needsCopy)
+    {
+        File.Copy(seedSource, localDbPath, overwrite: true);
     }
 }
 
 if (!File.Exists(localDbPath))
 {
     throw new InvalidOperationException(
-        "Bookstore.sqlite was not found or could not be created. " +
-        "Expected a seed file at the app root (publish) or ../../Bookstore.sqlite (local dev).");
+        "Bookstore.sqlite seed not found. Checked ContentRoot, BaseDirectory, and ../../ from ContentRoot. " +
+        "Ensure Bookstore.sqlite is published with the app (see .csproj Content CopyToPublishDirectory).");
 }
 
 var dbPath = localDbPath;
