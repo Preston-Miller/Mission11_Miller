@@ -18,6 +18,7 @@
   <ItemGroup>
     <Content Include="..\..\Bookstore.sqlite" Link="Bookstore.sqlite">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 

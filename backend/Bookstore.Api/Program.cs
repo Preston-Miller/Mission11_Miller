@@ -8,19 +8,36 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
-// Use a DB under ContentRoot/Data so writes work when the repo lives on a sync/read-only-prone path (e.g. iCloud Desktop).
-// Seed from repo-root Bookstore.sqlite once if the local file is missing (Api lives under backend/Bookstore.Api).
+// Writable DB under ContentRoot/Data. Seed from (1) Bookstore.sqlite next to the app (Azure/publish output),
+// or (2) repo-root Bookstore.sqlite when running from backend/Bookstore.Api locally.
 var contentRoot = builder.Environment.ContentRootPath;
 var dataDir = Path.Combine(contentRoot, "Data");
 Directory.CreateDirectory(dataDir);
 var localDbPath = Path.GetFullPath(Path.Combine(dataDir, "Bookstore.sqlite"));
-var seedDbPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "Bookstore.sqlite"));
-if (!File.Exists(localDbPath) && File.Exists(seedDbPath))
+var publishedSeedPath = Path.GetFullPath(Path.Combine(contentRoot, "Bookstore.sqlite"));
+var devRepoRootSeedPath = Path.GetFullPath(Path.Combine(contentRoot, "..", "..", "Bookstore.sqlite"));
+
+if (!File.Exists(localDbPath))
 {
-    File.Copy(seedDbPath, localDbPath);
+    var seedSource = File.Exists(publishedSeedPath)
+        ? publishedSeedPath
+        : File.Exists(devRepoRootSeedPath)
+            ? devRepoRootSeedPath
+            : null;
+    if (seedSource != null)
+    {
+        File.Copy(seedSource, localDbPath);
+    }
 }
 
-var dbPath = File.Exists(localDbPath) ? localDbPath : seedDbPath;
+if (!File.Exists(localDbPath))
+{
+    throw new InvalidOperationException(
+        "Bookstore.sqlite was not found or could not be created. " +
+        "Expected a seed file at the app root (publish) or ../../Bookstore.sqlite (local dev).");
+}
+
+var dbPath = localDbPath;
 builder.Services.AddDbContext<BookstoreContext>(options =>
 {
     options.UseSqlite($"Data Source={dbPath}");
