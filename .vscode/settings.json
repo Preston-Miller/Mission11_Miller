@@ -1,4 +1,0 @@
-{
-    "appService.defaultWebAppToDeploy": "undefined/subscriptions/525551c0-86f2-4338-8f71-ce8b5e903148/resourceGroups/appsvc_windows_centralus/providers/Microsoft.Web/sites/Bookstore-Miller-Backend",
-    "appService.deploySubpath": "backend/Bookstore.Api/publish"
-}

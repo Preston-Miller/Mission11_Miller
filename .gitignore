@@ -21,3 +21,8 @@
 backend/Bookstore.Api/Data/*.sqlite
 backend/Bookstore.Api/Data/*.sqlite-*
 
+# Local publish output / IDE (never commit)
+backend/Bookstore.Api/publish/
+**/.idea/
+.vscode/
+
