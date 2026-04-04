@@ -59,6 +59,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// CORS must run after UseRouting so browser cross-origin requests get the right headers.
+app.UseRouting();
 app.UseCors("AllowReact");
 app.MapControllers();
 
