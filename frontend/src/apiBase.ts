@@ -4,7 +4,7 @@
  * If `VITE_API_BASE_URL` is missing at build time (common in CI), a deployed HTTPS site
  * would otherwise fall back to localhost — the browser blocks that (mixed content) as "Failed to fetch".
  */
-const PRODUCTION_API_FALLBACK = 'https://bookstore-miller-backend.azurewebsites.net'
+const PRODUCTION_API_FALLBACK = 'https://413bookstore-backend.azurewebsites.net'
 
 function resolveApiBase(): string {
   const raw = import.meta.env.VITE_API_BASE_URL
